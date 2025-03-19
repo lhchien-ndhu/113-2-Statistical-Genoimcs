@@ -1,0 +1,65 @@
+
+setwd("C:\\Users\\lhchien\\plink")
+getwd()
+# .vcf to .bed
+system("plink --vcf .\\data\\ALL.chr2.phase1_release_v3.20101123.snps_indels_svs.genotypes.vcf.gz --make-bed --out .\\data\\HW1\\chr2")
+
+##GRCh37
+## LCT lactase https://www.ncbi.nlm.nih.gov/gene/3938
+## GRCh37 chr2 136545420..136594754
+
+# extract gene region
+system("plink --bfile .\\data\\HW1\\chr2 --chr 2 --from-bp 136545420 --to-bp 136594754 --make-bed --out .\\data\\HW1\\LCT")
+
+
+# .bed to .ped 
+system("plink --bfile .\\data\\HW1\\LCT --recode --out .\\data\\HW1\\LCT")
+
+# create race list files
+data.race<-read.table(".\\data\\integrated_call_samples_v3.20130502.ALL.panel.txt",header=T)
+head(data.race)
+table(data.race$super_pop)
+
+afr.list<-data.race[which(data.race$super_pop=="AFR"),1]
+eur.list<-data.race[which(data.race$super_pop=="EUR"),1]
+eas.list<-data.race[which(data.race$super_pop=="EAS"),1]
+
+out.afr<-data.frame(afr.list,afr.list)
+out.eur<-data.frame(eur.list,eur.list)
+out.eas<-data.frame(eas.list,eas.list)
+
+write.table(out.afr,file=".\\data\\afr_list.txt",row.names=F, col.names=F,quote=F)
+write.table(out.eur,file=".\\data\\eur_list.txt",row.names=F, col.names=F,quote=F)
+write.table(out.eas,file=".\\data\\eas_list.txt",row.names=F, col.names=F,quote=F)
+
+# extract race specific subgroup
+system("plink --file .\\data\\HW1\\LCT --keep .\\data\\afr_list.txt --recode --out .\\data\\HW1\\LCT_AFR")
+system("plink --file .\\data\\HW1\\LCT --keep .\\data\\eur_list.txt --recode --out .\\data\\HW1\\LCT_EUR")
+system("plink --file .\\data\\HW1\\LCT --keep .\\data\\eas_list.txt --recode --out .\\data\\HW1\\LCT_EAS")
+
+# qc: maf > 0.05, HWE p-value >10^-3, only SNPs
+system("plink --file .\\data\\HW1\\LCT_AFR --maf 0.05 --hwe 0.001 --snps-only just-acgt --recode --out .\\data\\HW1\\LCT_AFR_qc")
+system("plink --file .\\data\\HW1\\LCT_EUR --maf 0.05 --hwe 0.001 --snps-only just-acgt --recode --out .\\data\\HW1\\LCT_EUR_qc")
+system("plink --file .\\data\\HW1\\LCT_EAS --maf 0.05 --hwe 0.001 --snps-only just-acgt --recode --out .\\data\\HW1\\LCT_EAS_qc")
+
+# common SNPs list
+afr.map<-read.table(".\\0312\\AFR_qc.map")
+eur.map<-read.table(".\\0312\\EUR_qc.map")
+head(afr.map)
+dim(afr.map)
+dim(eur.map)
+
+snp.list<-intersect(afr.map[,2],eur.map[,2])
+write.table(snp.list,file="comm_SNP_list.txt",col.names=F,row.names=F,quote=F)
+
+# extract common SNPs
+system("plink --file .\\0312\\AFR_qc --extract comm_SNP_list.txt --recode --out .\\0312\\AFR_qc2")
+system("plink --file .\\0312\\EUR_qc --extract comm_SNP_list.txt --recode --out .\\0312\\EUR_qc2")
+
+# pairwise LD
+# https://zzz.bwh.harvard.edu/plink/ld.shtml
+system("plink --file .\\0312\\AFR_qc2 --r2 --ld-window-r2 0 --out AFR")
+system("plink --file .\\0312\\EUR_qc2 --r2 --ld-window-r2 0 --out EUR")
+
+
+system("plink --file .\\0312\\EUR_qc --extract comm_SNP_list.txt --recode HV --out .\\0312\\EUR_qc2")
