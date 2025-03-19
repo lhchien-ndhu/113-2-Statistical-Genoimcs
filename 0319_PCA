@@ -13,6 +13,9 @@ system("C:\\Users\\lhchien\\plink\\plink --vcf C:\\Users\\lhchien\\plink\\1000g\
 ## QC
 system("C:\\Users\\lhchien\\plink\\plink --bfile chr22 --maf 0.05 --hwe 0.001 --snps-only just-acgt --recode --out chr22_qc" )
 
+## high LD region (hg19-GRCH37)
+## https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD)
+
 ## LD pruning
 ## https://zzz.bwh.harvard.edu/plink/summary.shtml#prune
 ## window size in SNPs = 500, the number of SNPs to shift the window = 50, r^2 threshold = 0.2
