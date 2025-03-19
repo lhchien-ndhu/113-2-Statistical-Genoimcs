@@ -25,3 +25,30 @@ system("C:\\Users\\lhchien\\plink\\plink --file chr22_prune --pca --out chr22_pc
 
 #output: chr22_pca.eigenval
 #        chr22_pca.eigenvec
+# AFR, African (246)
+# AMR, Ad Mixed American (181)
+# ASN, East Asia (286)
+# EUR, European (379)
+# https://labs.icahn.mssm.edu/minervalab/resources/data-ark/1000-genomes/
+
+# plot 
+e.val<-read.table(file="chr22_pca.eigenval")
+e.vec<-read.table(file="chr22_pca.eigenvec")
+
+dim(e.vec)
+
+race<-read.table(file="C:\\Users\\lhchien\\plink\\1000g\\phase1_integrated_calls.20101123.ALL.panel_v2.txt")
+
+head(e.vec[,1:4])
+head(race)
+
+table(race[,3])
+
+pop <- numeric(nrow(race))
+pop [which(race[,3]=="AFR")] <- 1
+pop [which(race[,3]=="AMR")] <- 2
+pop [which(race[,3]=="ASN")] <- 3
+pop [which(race[,3]=="EUR")] <- 4
+
+plot(e.vec[,3],e.vec[,4],col=pop,xlab="PC1",ylab="PC2")
+legend("top",c("AFR","AMR","ASN","EUR"),col=1:4,pch=1)
