@@ -1,0 +1,80 @@
+getwd()
+setwd(".//pca")
+
+#https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20110521/
+#D:\software\plink\plink --vcf .\data\ALL.chr2.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz --make-bed --out chr2
+
+## vcf to bed
+
+system("D:\\software\\plink\\plink --vcf ALL.chr2.phase1_release_v3.20101123.snps_indels_svs.genotypes.vcf.gz --make-bed --out chr2" )
+system("D:\\software\\plink\\plink --vcf ALL.chr21.phase1_release_v3.20101123.snps_indels_svs.genotypes.vcf.gz --make-bed --out chr21" )
+system("D:\\software\\plink\\plink --vcf ALL.chr22.phase1_release_v3.20101123.snps_indels_svs.genotypes.vcf.gz --make-bed --out chr22" )
+
+## QC
+system("D:\\software\\plink\\plink --bfile chr22 --maf 0.05 --hwe 0.001 --snps-only just-acgt --recode --out chr22_qc" )
+system("D:\\software\\plink\\plink --bfile chr21 --maf 0.05 --hwe 0.001 --snps-only just-acgt --recode --out chr21_qc" )
+
+## high LD region (hg19-GRCH37)
+## https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD)
+
+## LD pruning
+## https://zzz.bwh.harvard.edu/plink/summary.shtml#prune
+## window size in SNPs = 500, the number of SNPs to shift the window = 50, r^2 threshold = 0.2
+
+system("D:\\software\\plink\\plink --file chr22_qc --indep-pairwise 500 50 0.2 --out chr22")
+system("D:\\software\\plink\\plink --file chr22_qc --extract chr22.prune.in --recode --out chr22_prune")
+
+system("D:\\software\\plink\\plink --file chr21_qc --indep-pairwise 500 50 0.2 --out chr21")
+system("D:\\software\\plink\\plink --file chr21_qc --extract chr21.prune.in --recode --out chr21_prune")
+
+
+## merge files
+list<-paste("chr21_prune",c(".ped",".map"),sep="")
+write.table(t(list),file="merge_files.txt",row.names=F,col.names=F,quote=F)
+system("D:\\software\\plink\\plink --file chr22_prune --merge-list merge_files.txt --recode --out merge")
+
+## remove related samples
+## relatedness check --genome (IBD < 0.1875) --king-cutoff 0.0442(Kinship coefficient)
+
+## PCA
+#plink1.9 --file chr21_maf_prune --pca header --out chr21_pca
+
+system("D:\\software\\plink\\plink --file merge --pca --out merge_pca")
+
+#output: merge_pca.eigenval
+#        merge_pca.eigenvec
+# AFR, African (246)
+# AMR, Ad Mixed American (181)
+# ASN, East Asia (286)
+# EUR, European (379)
+# https://labs.icahn.mssm.edu/minervalab/resources/data-ark/1000-genomes/
+
+e.val<-read.table(file="merge_pca.eigenval")
+e.vec<-read.table(file="merge_pca.eigenvec")
+
+race<-read.table(file="phase1_integrated_calls.20101123.ALL.panel.txt")
+
+head(e.vec[,1:4])
+head(race)
+
+table(race[,3])
+
+pop <- numeric(nrow(race))
+pop [which(race[,3]=="AFR")] <- 1
+pop [which(race[,3]=="AMR")] <- 2
+pop [which(race[,3]=="ASN")] <- 3
+pop [which(race[,3]=="EUR")] <- 4
+
+plot(e.vec[,3],e.vec[,4],col=pop,xlab="PC1",ylab="PC2")
+legend("top",c("AFR","AMR","ASN","EUR"),col=1:4,pch=1)
+
+
+
+
+
+
+
+#file.list<- rbind(paste("chr",21,c(".bed",".bim",".fam"),sep=""),
+#             paste("chr",22,c(".bed",".bim",".fam"),sep=""))
+#write.table(file.list,file="merge_files.txt",row.names=F,col.names=F,quote=F)
+
