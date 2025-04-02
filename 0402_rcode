@@ -1,0 +1,17 @@
+getwd()
+setwd(".//GWAS_QC")
+dir()
+#https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20110521/
+
+## vcf to bed
+system("D:\\software\\plink\\plink --vcf ALL.chr22.phase1_release_v3.20101123.snps_indels_svs.genotypes.vcf.gz --make-bed --out chr22" )
+
+# extract region
+system("D:\\software\\plink\\plink --bfile chr22 --chr 22 --from-bp 16050408 --to-bp 16051107 --make-bed --out chr22_1")
+system("D:\\software\\plink\\plink --bfile chr22 --chr 22 --from-bp 16051249 --to-bp 16051480 --make-bed --out chr22_2")
+
+## merge files
+## https://zzz.bwh.harvard.edu/plink/dataman.shtml#mergelist
+list<-paste("chr22_2",c(".bed",".bim",".fam"),sep="")
+write.table(t(list),file="merge_files.txt",row.names=F,col.names=F,quote=F)
+system("D:\\software\\plink\\plink --bfile chr22_1 --merge-list merge_files.txt --make-bed --out merge")
