@@ -1,0 +1,61 @@
+getwd()
+setwd(".//GWAS_QC")
+dir()
+#https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20110521/
+#D:\software\plink\plink --vcf .\data\ALL.chr2.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz --make-bed --out chr2
+
+## vcf to bed
+
+system("D:\\software\\plink\\plink --vcf ALL.chr22.phase1_release_v3.20101123.snps_indels_svs.genotypes.vcf.gz --make-bed --out chr22" )
+system("D:\\software\\plink\\plink --vcf ALL.chr21.phase1_release_v3.20101123.snps_indels_svs.genotypes.vcf.gz --make-bed --out chr21" )
+
+## snp id missing
+system("D:\\software\\plink\\plink --bfile chr21 --snps-only just-acgt --set-missing-var-ids @:#[b37] --make-bed --out chr21_1" )
+system("D:\\software\\plink\\plink --bfile chr22 --snps-only just-acgt --set-missing-var-ids @:#[b37] --make-bed --out chr22_1" )
+
+## merge files
+list<-paste("chr22_1",c(".bed",".bim",".fam"),sep="")
+write.table(t(list),file="merge_files.txt",row.names=F,col.names=F,quote=F)
+system("D:\\software\\plink\\plink --bfile chr21_1 --merge-list merge_files.txt --make-bed --out merge")
+
+## QC
+system("D:\\software\\plink\\plink --bfile merge --missing" )
+# individual
+system("D:\\software\\plink\\plink --bfile merge --mind 0.1 --make-bed --out merge_q1" )
+# snp
+system("D:\\software\\plink\\plink --bfile merge_q1 --geno 0.1 --make-bed --out merge_q2" )
+# maf
+system("D:\\software\\plink\\plink --bfile merge_q2 --maf 0.05 --make-bed --out merge_q3" )
+# hwe
+system("D:\\software\\plink\\plink --bfile merge_q3 --hwe 0.0001 --make-bed --out merge_q4" )
+
+## phenotype data
+data<-read.table(file="phase1_integrated_calls.20101123.ALL.panel2",fill=T,header=F)
+head(data)
+(n<-dim(data)[1])
+
+set.seed(123)
+y<-rnorm(n)
+x1<-rnorm(n)
+x2<-rnorm(n)
+race<-data[,3]
+pheno<-data.frame(data[,1],data[,1],y)
+covar<-data.frame(data[,1],data[,1],x1,x2,race)
+colnames(pheno)[1:2]<-c("FID","IID")
+colnames(covar)[1:2]<-c("FID","IID")
+write.table(pheno,file="pheno.txt",row.names=F,quote=F)
+write.table(covar,file="covar.txt",row.names=F,quote=F)
+## association
+system("D:\\software\\plink\\plink --bfile merge_q4 --pheno pheno.txt --pheno-name y --make-bed --out merge_f" )
+
+system("D:\\software\\plink\\plink --bfile merge_f --covar covar.txt --covar-name x1 --allow-no-sex --linear --out linear_model" )
+
+##################
+# extract region
+system("D:\\software\\plink\\plink --bfile chr22 --chr 22 --from-bp 16050408 --to-bp 16051107 --make-bed --out chr22_1")
+system("D:\\software\\plink\\plink --bfile chr22 --chr 22 --from-bp 16051249 --to-bp 16051480 --make-bed --out chr22_2")
+
+## merge files
+list<-paste("chr22_2",c(".bed",".bim",".fam"),sep="")
+write.table(t(list),file="merge_files.txt",row.names=F,col.names=F,quote=F)
+system("D:\\software\\plink\\plink --bfile chr22_1 --merge-list merge_files.txt --make-bed --out merge")
