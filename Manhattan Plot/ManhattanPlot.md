@@ -14,7 +14,7 @@ Li-Hsin Chien
 
 以上這些， plink 指令 –linear 產生的 output 都有。
 
-讀入範例檔案: *Manhattan_test.assoc.linear*:
+讀入範例檔案: *Manhattan_test.assoc2.linear*:
 
 ``` r
 r<-read.table(file="Manhattan_test2.assoc.linear",header=T)
