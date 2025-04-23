@@ -1,5 +1,8 @@
 # 113-2-Statistical-Genoimcs
 
+## 2025.04.23
+* REML likelihood 推導: https://rh8liuqy.github.io/Linear_mixed_model_equations.html 
+
 ## 期中考公告: (2025/04/11 22:00pm) 
 - 期中報告題目以及相關資料已上傳。Deadline: 4/19 (六) 以前上傳至 e 學苑
 - Manhattan plot 範例已上傳
