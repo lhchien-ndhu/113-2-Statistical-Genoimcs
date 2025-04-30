@@ -1,0 +1,41 @@
+getwd()
+setwd("./GCTA/gcta-1.94.1-Win-x86_64")
+
+## Example file: 
+### 1. PLINK binary PED format; test.bed, test.bim, test.fam
+###  1000 SNPs
+###  3925 samples
+### 2. phenotype: test.fam (3 columns: FID, IID, y)
+
+## step1: make GRM (genetic relationship matrix)
+# --autosome: use autosomal SNPs
+# --maf: filter SNPs
+# --make-grm: make GRM
+# --thread-num: As a rule of thumb, never give thread number larger than the number of CPU cores.(CPU核心數) Too many threads may also slow down the analysis if the complexity is not large enough.
+system("./exe/gcta64 --bfile test --autosome --maf 0.01 --make-grm --out test --thread-num 10")
+
+## step2: estimating the variance explained by the SNPs
+### input: GRM in step 1 (test) + phenotype info (test.phen)
+
+system("./exe/gcta64 --grm test --pheno test.phen --reml --out test --thread-num 10")
+
+#Summary result of REML analysis:
+#  Source	Variance	SE
+#V(G)	0.022152	0.008751
+#V(e)	0.969117	0.022896
+#Vp	0.991269	0.022467
+#V(G)/Vp	0.022347	0.008769
+#############################
+# V(G): genetic variance
+# V(e): residual variance
+# Vp: phenotypic varaince; V(P) = V(G) + V(e)
+# V(G)/Vp: heritability
+
+####################################################################
+## 1000 genomes sequencing data or imputed data (extremely large number of SNPs and large sample size)
+##   1. calculate GRM for each autosome
+##   2. merge the 22 GRMs
+## note: remove cryptic relatedness: 0.025 roughly corresponds to individuals who are less related than third-degree
+
+system("./exe/gcta64 --grm test --grm-cutoff 0.025 --make-grm --out test_rm025")
+
