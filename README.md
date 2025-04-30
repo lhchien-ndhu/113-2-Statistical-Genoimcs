@@ -1,5 +1,8 @@
 # 113-2-Statistical-Genoimcs
 
+## 2025.04.30
+* GCTA: https://yanglab.westlake.edu.cn/software/gcta/#Overview
+
 ## 2025.04.23
 * REML likelihood 推導: https://rh8liuqy.github.io/Linear_mixed_model_equations.html
 * GCTA 論文 (估 $h^2_{SNP}$ ): https://pmc.ncbi.nlm.nih.gov/articles/PMC3014363/
