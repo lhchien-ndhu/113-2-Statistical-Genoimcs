@@ -1,0 +1,13 @@
+## 計算 h^2_GWAS
+system("C:\\Users\\lhchien\\plink\\plink --bfile test --extract snp_list.txt --recodeA --out GWAS_snp")
+
+data<-read.table("GWAS_snp.raw",head=T)
+head(data)
+gwas.x<-as.matrix(data[,-(1:6)])
+head(gwas.x)
+data.pheno<-read.table("test.phen")
+head(data.pheno)
+y<-data.pheno[,3]
+r<-lm(y~gwas.x)
+summary(r)
+summary(gwas.x)
