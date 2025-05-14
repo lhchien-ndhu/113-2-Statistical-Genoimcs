@@ -1,0 +1,53 @@
+## meta-analysis
+
+install.packages("meta")  
+library(meta)
+
+# effect size (normal)
+TE <- c(0.2, 0.5, 0.3, 0.1, 0.4)
+
+# sd
+seTE <- c(0.1, 0.2, 0.15, 0.1, 0.2)
+
+# study labels
+studlab <- c("Study 1", "Study 2", "Study 3", "Study 4", "Study 5")
+
+meta_analysis <- metagen(TE = TE,
+                         seTE = seTE,
+                         studlab = studlab,
+                         common = TRUE,
+                         random = TRUE,
+                         method.tau = "PM")  
+
+# results
+summary(meta_analysis)
+
+forest(meta_analysis)
+
+funnel(meta_analysis)
+
+## Meta-Analysis with R ############ 
+## https://www.uniklinik-freiburg.de/imbi-en/studies-and-teaching/meta-analysis-with-r/datasets.html
+## 
+
+data1<-read.csv("dataset01.csv")
+
+mc1 <- metacont(Ne, Me, Se, Nc, Mc, Sc,
+                data=data1,
+                studlab=paste(author, year))
+
+# 1. Apply generic inverse variance method
+mc1.gen <- metagen(mc1$TE, mc1$seTE, sm="MD")
+# 2. Same result
+mc1.gen <- metagen(TE, seTE, data=mc1, sm="MD")
+# 3. Print results for fixed effect and random effects method
+c(mc1$TE.fixed, mc1$TE.random)
+c(mc1.gen$TE.fixed, mc1.gen$TE.random)
+
+funnel(mc1.gen, 
+       xlab = "Effect Size"
+)
+
+metabias(mc1.gen, method.bias = "linreg")
+forest(mc1)
+
