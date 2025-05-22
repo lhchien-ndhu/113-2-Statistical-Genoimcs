@@ -1,5 +1,8 @@
 # 113-2-Statistical-Genoimcs
 
+## 2025.05.22
+* GWAS summary data: https://www.nature.com/articles/s41467-024-50404-y
+
 ## 2025.04.30
 * GCTA: https://yanglab.westlake.edu.cn/software/gcta/#Overview
 
